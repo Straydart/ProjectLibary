@@ -46,29 +46,36 @@ namespace WpfApp1
         public List<(string FileName, string FilePath)> GetFiles(string path, string searchPattern)
         {
             List<(string FileName, string FilePath)> files = new List<(string FileName, string FilePath)>();
-
             try
             {
-                foreach (string file in Directory.GetFiles(path, searchPattern, SearchOption.TopDirectoryOnly))
-                {
-                    files.Add((Path.GetFileName(file), file));
-                }
 
-                foreach (string directory in Directory.GetDirectories(path))
+                try
                 {
-                    try
+                    foreach (string file in Directory.GetFiles(path, searchPattern, SearchOption.TopDirectoryOnly))
                     {
-                        files.AddRange(GetFiles(directory, searchPattern));
+                        files.Add((Path.GetFileName(file), file));
                     }
-                    catch (UnauthorizedAccessException)
+
+                    foreach (string directory in Directory.GetDirectories(path))
                     {
-                        Console.WriteLine("Access denied to directory: " + directory);
+                        try
+                        {
+                            files.AddRange(GetFiles(directory, searchPattern));
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            Console.WriteLine("Access denied to directory: " + directory);
+                        }
                     }
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    Console.WriteLine("Access denied to path: " + path);
                 }
             }
-            catch (UnauthorizedAccessException)
+            catch (DirectoryNotFoundException)
             {
-                Console.WriteLine("Access denied to path: " + path);
+                Console.WriteLine("Directory not found: " + path);
             }
 
             return files;
