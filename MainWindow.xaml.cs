@@ -25,11 +25,11 @@ namespace WpfApp1
                     var file = functions.GetFiles(drive.Name, "*devenv.exe");
                     foreach (var f in file)
                     {
-                        ListBoxItem listBoxItem = new ListBoxItem();
-                        listBoxItem.Name = f.FilePath.Split('\\')[4]+f.FilePath.Split('\\')[3];
-                        listBoxItem.Tag = f.FilePath;
-                        listBoxItem.Content = f.FilePath.Split('\\')[2]+" "+f.FilePath.Split('\\')[3]+" "+f.FilePath.Split('\\')[4];
-                        VisualStudio.Items.Add(listBoxItem);
+                        ComboBoxItem item = new ComboBoxItem();
+                        item.Name = f.FilePath.Split('\\')[4]+f.FilePath.Split('\\')[3];
+                        item.Tag = f.FilePath;
+                        item.Content = f.FilePath.Split('\\')[2]+" "+f.FilePath.Split('\\')[3]+" "+f.FilePath.Split('\\')[4];
+                        VisualStudio.Items.Add(item);
                     }
                 }
             }
