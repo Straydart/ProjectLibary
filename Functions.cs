@@ -1,9 +1,10 @@
 ﻿using System.Text.Json;
 using System.IO;
+using System.Windows.Controls;
 
 namespace WpfApp1
 {
-    internal class Functions
+    public class Functions
     {
         public void AddToJson(string filename, string filepath)
         {
@@ -43,7 +44,7 @@ namespace WpfApp1
             File.WriteAllText(@"database.json", combinedJsonString);
         }
 
-        public List<(string FileName, string FilePath)> GetFiles(string path, string searchPattern)
+        public async Task<List<(string FileName, string FilePath)>> GetFiles(string path, string searchPattern)
         {
             List<(string FileName, string FilePath)> files = new List<(string FileName, string FilePath)>();
             try
@@ -60,7 +61,7 @@ namespace WpfApp1
                     {
                         try
                         {
-                            files.AddRange(GetFiles(directory, searchPattern));
+                            files.AddRange(await GetFiles(directory, searchPattern));
                         }
                         catch (UnauthorizedAccessException)
                         {
