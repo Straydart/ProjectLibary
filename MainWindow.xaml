@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfApp1"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
 
         mc:Ignorable="d"
         Title="MainWindow" Height="500" Width="1000">
@@ -26,12 +27,17 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
 
+            
             <Button Grid.Column="6" Grid.Row="1" Margin="15" Grid.RowSpan="1" Click="Button_Click">+</Button>
-            <Button Grid.Column="7" Grid.Row="1" Margin="15" Grid.RowSpan="1" Click="AddEverything_Click">-O</Button>
+            <Button x:Name="AddEverything" Grid.Column="7" Grid.Row="1" Margin="15" Grid.RowSpan="1" Click="AddEverything_Click">
+                <fa:ImageAwesome x:Name="AddEverythingLoading" Icon="Spinner" Spin="True" SpinDuration="4" Visibility="Hidden"/>
+            </Button>
             <TextBox Grid.Column="0" Grid.ColumnSpan="2" FontSize="20" TextWrapping="Wrap" Text=""  VerticalAlignment="Top" x:Name="Searchbar"/>
-            <Button Grid.Column="1" Grid.Row="0" Click="Search_Click" Width="30" Margin="0,1" HorizontalAlignment="Right">-O</Button>
+            <Button Grid.Column="1" Grid.Row="0" Click="Search_Click" Width="30" Margin="0,1" HorizontalAlignment="Right" Content="-O"></Button>
             <ComboBox x:Name="VisualStudio" Grid.Column="5" Grid.ColumnSpan="3"/>
-            <Button Grid.Column="7" Grid.Row="0" Click="FindVS_Click" Width="30" HorizontalAlignment="Right">-O</Button>
+            <Button x:Name="FindVS" Grid.Column="7" Grid.Row="0" Click="FindVS_Click" Width="30" HorizontalAlignment="Right">
+                <fa:ImageAwesome x:Name="LoadingImage" Icon="Spinner" Spin="True" SpinDuration="4" Visibility="Hidden"/>
+            </Button>
 
         </Grid>
     </ScrollViewer>

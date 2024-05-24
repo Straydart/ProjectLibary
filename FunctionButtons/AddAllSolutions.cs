@@ -5,7 +5,7 @@ namespace WpfApp1.FunctionButtons
     internal class AddAllSolutions
     {
         Functions functions = new Functions();
-        public void addAllSolutions()
+        public async void addAllSolutions()
         {
             foreach (var drive in DriveInfo.GetDrives())
             {
@@ -14,7 +14,7 @@ namespace WpfApp1.FunctionButtons
                     List<(string FileName, string FilePath)> slnFiles = new List<(string FileName, string FilePath)>();
                     try
                     {
-                        slnFiles.AddRange(functions.GetFiles(drive.ToString(), "*.sln"));
+                        slnFiles.AddRange(await functions.GetFiles(drive.ToString(), "*.sln"));
                     }
                     catch (UnauthorizedAccessException ex)
                     {

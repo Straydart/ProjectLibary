@@ -1,40 +1,88 @@
-﻿using System.Diagnostics;
+﻿using FontAwesome.WPF;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Xml.Linq;
 using WpfApp1.FunctionButtons;
+
 
 namespace WpfApp1
 {
-    public partial class MainWindow : Window
+
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         Functions functions = new Functions();
+
+        public void SetVisability(ref ImageAwesome element, Visibility visibility)
+        {
+            element.Visibility = visibility; 
+            OnPropertyChanged();
+        }
+
+
+        public Visibility GetVisibility(ref ImageAwesome element)
+        {
+            return element.Visibility;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+
         public MainWindow()
         {
             InitializeComponent();
             Create create = new Create(this);
             create.CreateContent();
         }
-        private void FindVS_Click(object sender, RoutedEventArgs e)
+
+
+        private async void FindVS_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var drive in DriveInfo.GetDrives())
+
+            SetVisability(ref LoadingImage, Visibility.Visible);
+
+            var filePathList = new List<string>();
+
+            var enumTask = Task.Run(async () =>
             {
-                if (drive.IsReady)
+                foreach (var drive in DriveInfo.GetDrives())
                 {
-                    var file = functions.GetFiles(drive.Name, "*devenv.exe");
-                    foreach (var f in file)
+                    if (drive.IsReady)
                     {
-                        ComboBoxItem item = new ComboBoxItem();
-                        item.Name = f.FilePath.Split('\\')[4]+f.FilePath.Split('\\')[3];
-                        item.Tag = f.FilePath;
-                        item.Content = f.FilePath.Split('\\')[2]+" "+f.FilePath.Split('\\')[3]+" "+f.FilePath.Split('\\')[4];
-                        VisualStudio.Items.Add(item);
+                        var files = await functions.GetFiles(drive.Name, "*devenv.exe");
+                        foreach (var file in files)
+                        {
+                            filePathList.Add(file.FilePath);
+                        }
                     }
                 }
+            });
+            await enumTask.ConfigureAwait(true);
+            AddCombbox(filePathList);
+            SetVisability(ref LoadingImage, Visibility.Hidden);
+
+        }
+        public void AddCombbox(IList<string> files)
+        {
+            foreach (var f in files)
+            {
+                var fileParts = f.Split('\\');
+                ComboBoxItem item = new ComboBoxItem();
+                item.Name = fileParts[4]+fileParts[3];
+                item.Tag = f;
+                item.Content = fileParts[2]+" "+fileParts[3]+" "+fileParts[4];
+                VisualStudio.Items.Add(item);
             }
         }
-        
         private void Search_Click(object sender, RoutedEventArgs e)
         {
             foreach (var item in MainGrid.Children)
@@ -66,14 +114,22 @@ namespace WpfApp1
             addSingleSolution.addSingleSolution(sender, e);
             create.CreateContent();
         }
-        private void AddEverything_Click(object sender, RoutedEventArgs e)
+
+        private async void AddEverything_Click(object sender, RoutedEventArgs e)
         {
-            this.IsEnabled = false;
+            SetVisability(ref AddEverythingLoading, Visibility.Visible);
+
+
             var create = new Create(this);
             var addAllSolutions = new AddAllSolutions();
-            addAllSolutions.addAllSolutions();
+            var enumTask = Task.Run(async () =>
+            {
+                addAllSolutions.addAllSolutions();             
+            });
+            await enumTask.ConfigureAwait(true);
             create.CreateContent();
-            this.IsEnabled = true;
+
+            SetVisability(ref AddEverythingLoading, Visibility.Hidden);
         }
         public void Open_Sln(object sender, RoutedEventArgs e)
         {
@@ -98,6 +154,7 @@ namespace WpfApp1
                 MessageBox.Show("No solution selected.");
             }
         }
+
         private void VisualStudio_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (VisualStudio.SelectedItem is ListBoxItem selectedItem)
