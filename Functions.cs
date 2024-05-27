@@ -1,21 +1,33 @@
 ﻿using System.Text.Json;
 using System.IO;
 using System.Windows.Controls;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace WpfApp1
 {
     public class Functions
     {
-        public void AddToJson(string filename, string filepath)
+        public string ReadFileContent(string filePath)
         {
+            if (File.Exists(filePath))
+            {
+                return File.ReadAllText(filePath);
+            }
+
+            File.Create(filePath).Dispose();
+            return string.Empty;
+        }
+
+        public async Task AddToJson(string filename, string filepath, string targetJson)
+        {
+            var databaseJsonString = "";
             var Buttonsafe = new ButtonSafe()
             {
                 ProjectName = filename.Replace(".sln", ""),
                 FilePath = filepath,
             };
 
-            // Read the existing JSON data from database.json
-            var databaseJsonString = File.ReadAllText(@"database.json");
+            databaseJsonString = File.ReadAllText(targetJson);
 
             List<ButtonSafe> databaseList;
 
@@ -41,7 +53,7 @@ namespace WpfApp1
             var combinedJsonString = JsonSerializer.Serialize(databaseList);
 
             // Write the updated JSON back to database.json
-            File.WriteAllText(@"database.json", combinedJsonString);
+            File.WriteAllText(targetJson, combinedJsonString);
         }
 
         public async Task<List<(string FileName, string FilePath)>> GetFiles(string path, string searchPattern)

@@ -3,30 +3,54 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Xml.Linq;
 using WpfApp1.FunctionButtons;
-
 
 namespace WpfApp1
 {
-
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
-        Functions functions = new Functions();
+        private readonly Functions _functions = new Functions();
 
-        public void SetVisability(ref ImageAwesome element, Visibility visibility)
+
+        public MainWindow()
         {
-            element.Visibility = visibility; 
-            OnPropertyChanged();
+            EnsureRequiredFilesExist();
+            InitializeComponent();
+            InitializeContent();
         }
 
-
-        public Visibility GetVisibility(ref ImageAwesome element)
+        private void EnsureRequiredFilesExist()
         {
-            return element.Visibility;
+            string[] requiredFiles =
+            {
+                "AutobuildJsons/SolutionDatabase.json",
+                "AutobuildJsons/ExecutionDatabase.json"
+            };
+
+            foreach (var file in requiredFiles)
+            {
+                if (!File.Exists(file))
+                {
+                    if (!Directory.Exists(file))
+                    {
+                        Directory.CreateDirectory(file.Split('/')[0]);
+                    }
+                    File.Create(file).Dispose();
+
+                }
+            }
+        }
+
+        private async void InitializeContent()
+        {
+            var create = new Create(this);
+            await create.CreateContentAsync();
+            LoadExeJson();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -36,115 +60,134 @@ namespace WpfApp1
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-
-        public MainWindow()
+        public void SetVisibility(ImageAwesome element, Visibility visibility)
         {
-            InitializeComponent();
-            Create create = new Create(this);
-            create.CreateContent();
+            element.Visibility = visibility;
+            OnPropertyChanged();
         }
 
+        public Visibility GetVisibility(ImageAwesome element)
+        {
+            return element.Visibility;
+        }
 
         private async void FindVS_Click(object sender, RoutedEventArgs e)
         {
+            SetVisibility(LoadingImage, Visibility.Visible);
 
-            SetVisability(ref LoadingImage, Visibility.Visible);
-
-            var filePathList = new List<string>();
-
-            var enumTask = Task.Run(async () =>
+            var filePathList = await Task.Run(async () =>
             {
+                var filePaths = new List<string>();
                 foreach (var drive in DriveInfo.GetDrives())
                 {
                     if (drive.IsReady)
                     {
-                        var files = await functions.GetFiles(drive.Name, "*devenv.exe");
-                        foreach (var file in files)
+                        var files = await _functions.GetFiles(drive.Name, "*devenv.exe");
+                        filePaths.AddRange(files.Select(file => file.FilePath));
+                    }
+                }
+                return filePaths;
+            });
+
+            AddToComboBox(filePathList);
+            SetVisibility(LoadingImage, Visibility.Hidden);
+        }
+
+        private void AddToComboBox(IEnumerable<string> files)
+        {
+            foreach (var file in files)
+            {
+                var fileParts = file.Split('\\');
+                var item = new ComboBoxItem
+                {
+                    Name = $"{fileParts[4]}{fileParts[3]}",
+                    Tag = file,
+                    Content = $"{fileParts[2]} {fileParts[3]} {fileParts[4]}"
+                };
+                _functions.AddToJson(item.Content.ToString(), item.Tag.ToString(), "AutobuildJsons/ExecutionDatabase.json");
+            }
+            LoadExeJson();
+        }
+        public void LoadExeJson()
+        {
+            try
+            {
+
+                string jsonFilePath = "AutobuildJsons/ExecutionDatabase.json";
+                if (File.Exists(jsonFilePath))
+                {
+                    string jsonContent = _functions.ReadFileContent(jsonFilePath);
+
+                    if (!string.IsNullOrEmpty(jsonContent))
+                    {
+
+                        var executablesList = JsonSerializer.Deserialize<List<ButtonSafe>>(jsonContent);
+
+                        foreach (var executable in executablesList)
                         {
-                            filePathList.Add(file.FilePath);
+                            var comboBoxItem = new ComboBoxItem
+                            {
+                                Content = executable.ProjectName,
+                                Tag = executable.FilePath,
+                            };
+                            VisualStudio.Items.Add(comboBoxItem);
                         }
                     }
                 }
-            });
-            await enumTask.ConfigureAwait(true);
-            AddCombbox(filePathList);
-            SetVisability(ref LoadingImage, Visibility.Hidden);
-
-        }
-        public void AddCombbox(IList<string> files)
-        {
-            foreach (var f in files)
+            }catch (Exception ex)
             {
-                var fileParts = f.Split('\\');
-                ComboBoxItem item = new ComboBoxItem();
-                item.Name = fileParts[4]+fileParts[3];
-                item.Tag = f;
-                item.Content = fileParts[2]+" "+fileParts[3]+" "+fileParts[4];
-                VisualStudio.Items.Add(item);
+
             }
         }
+
         private void Search_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var item in MainGrid.Children)
+            foreach (var item in MainGrid.Children.OfType<Button>())
             {
-                Button button = new Button();
-                if (item.GetType() == typeof(Button))
+                if (item.Name.Equals("slnbutton", StringComparison.OrdinalIgnoreCase))
                 {
-                    button = (Button)item;
-                    if (button.Name.ToLower() == "slnbutton")
-                    {
-                        if (button.Content.ToString().Contains(Searchbar.Text, StringComparison.CurrentCultureIgnoreCase))
-                        {
-                            button.Background = Brushes.Yellow;
-                        }
-                        else
-                        {
-                            button.Background = Brushes.LightGray;
-                        }
-                    }
-
+                    item.Background = item.Content.ToString().Contains(Searchbar.Text, StringComparison.CurrentCultureIgnoreCase)
+                        ? Brushes.Yellow
+                        : Brushes.LightGray;
                 }
             }
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click(object sender, RoutedEventArgs e)
         {
             var addSingleSolution = new AddSingleSolution();
-            var create = new Create(this);
             addSingleSolution.addSingleSolution(sender, e);
-            create.CreateContent();
+
+            var create = new Create(this);
+            await create.CreateContentAsync();
         }
 
         private async void AddEverything_Click(object sender, RoutedEventArgs e)
         {
-            SetVisability(ref AddEverythingLoading, Visibility.Visible);
+            SetVisibility(AddEverythingLoading, Visibility.Visible);
 
+            var addAllSolutions = new AddAllSolutions();
+            await Task.Run(() => addAllSolutions.addAllSolutions());
 
             var create = new Create(this);
-            var addAllSolutions = new AddAllSolutions();
-            var enumTask = Task.Run(async () =>
-            {
-                addAllSolutions.addAllSolutions();             
-            });
-            await enumTask.ConfigureAwait(true);
-            create.CreateContent();
+            await create.CreateContentAsync();
 
-            SetVisability(ref AddEverythingLoading, Visibility.Hidden);
+            SetVisibility(AddEverythingLoading, Visibility.Hidden);
         }
+
         public void Open_Sln(object sender, RoutedEventArgs e)
         {
-            Button button = (Button)sender;
-            if (VisualStudio.SelectedItem is ListBoxItem selectedItem)
+            if (VisualStudio.SelectedItem is ComboBoxItem selectedItem)
             {
                 string filePath = selectedItem.Tag.ToString();
-                string arguments = button.Tag.ToString();
+                string arguments = ((Button)sender).Tag.ToString();
 
-                using var process = new Process()
+                var process = new Process
                 {
-                    StartInfo = new ProcessStartInfo()
+                    StartInfo = new ProcessStartInfo
                     {
                         FileName = filePath,
-                        Arguments = arguments,
+                        Arguments = arguments
                     }
                 };
                 process.Start();
@@ -157,12 +200,10 @@ namespace WpfApp1
 
         private void VisualStudio_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (VisualStudio.SelectedItem is ListBoxItem selectedItem)
+            if (VisualStudio.SelectedItem is ComboBoxItem selectedItem)
             {
-                var tag = selectedItem.Tag;
-                MessageBox.Show($"Selected Tag: {tag}");
+                MessageBox.Show($"Selected Tag: {selectedItem.Tag}");
             }
         }
-
     }
 }
