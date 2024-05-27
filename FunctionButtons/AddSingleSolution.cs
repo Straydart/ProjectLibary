@@ -5,7 +5,7 @@ namespace WpfApp1.FunctionButtons
 {
     internal class AddSingleSolution : IFuctionButtons
     {
-        public void addSingleSolution(object sender, RoutedEventArgs e)
+        public async void addSingleSolution(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog();
             dialog.FileName = ""; // Default file name
@@ -19,7 +19,7 @@ namespace WpfApp1.FunctionButtons
             if (result == true)
             {
                 Functions functions = new Functions();
-                functions.AddToJson(dialog.SafeFileName, dialog.FileName);
+                await functions.AddToJson(dialog.SafeFileName, dialog.FileName, "AutobuildJsons/SolutionDatabase.json");
             }
         }
     }

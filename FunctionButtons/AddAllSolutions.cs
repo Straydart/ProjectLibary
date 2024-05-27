@@ -23,7 +23,7 @@ namespace WpfApp1.FunctionButtons
 
                     foreach (var file in slnFiles)
                     {
-                        functions.AddToJson(file.FileName, file.FilePath);
+                        await functions.AddToJson(file.FileName, file.FilePath, "AutobuildJsons/SolutionDatabase.json");
                     }
                 }
             }
