@@ -1,9 +1,11 @@
 ﻿using System.Text.Json;
 using System.IO;
 using System.Windows.Controls;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using FontAwesome.WPF;
+using System.Windows;
+using ProjectDirectory.Models;
 
-namespace WpfApp1
+namespace ProjectDirectory
 {
     public class Functions
     {
@@ -18,7 +20,7 @@ namespace WpfApp1
             return string.Empty;
         }
 
-        public async Task AddToJson(string filename, string filepath, string targetJson)
+        public static void AddToJson(string filename, string filepath, string targetJson)
         {
             var databaseJsonString = "";
             var Buttonsafe = new ButtonSafe()
@@ -55,8 +57,68 @@ namespace WpfApp1
             // Write the updated JSON back to database.json
             File.WriteAllText(targetJson, combinedJsonString);
         }
+        public void SetVisibility(ImageAwesome element, Visibility visibility, View.MainWindow window)
+        {
+            element.Visibility = visibility;
+            window.OnPropertyChanged();
+        }
 
-        public async Task<List<(string FileName, string FilePath)>> GetFiles(string path, string searchPattern)
+        public Visibility GetVisibility(ImageAwesome element)
+        {
+            return element.Visibility;
+        }
+        public void EnsureRequiredFilesExist()
+        {
+            string[] requiredFiles =
+            {
+                "AutobuildJsons/SolutionDatabase.json",
+                "AutobuildJsons/ExecutionDatabase.json"
+            };
+
+            foreach (var file in requiredFiles)
+            {
+                if (!File.Exists(file))
+                {
+                    if (!Directory.Exists(file))
+                    {
+                        Directory.CreateDirectory(file.Split('/')[0]);
+                    }
+                    File.Create(file).Dispose();
+
+                }
+            }
+        }
+        public void LoadExeJson(View.MainWindow window)
+        {
+            try
+            {
+                string jsonFilePath = "AutobuildJsons/ExecutionDatabase.json";
+                if (File.Exists(jsonFilePath))
+                {
+                    string jsonContent = ReadFileContent(jsonFilePath);
+
+                    if (!string.IsNullOrEmpty(jsonContent))
+                    {
+                        var executablesList = JsonSerializer.Deserialize<List<ButtonSafe>>(jsonContent);
+
+                        foreach (var executable in executablesList)
+                        {
+                            var comboBoxItem = new ComboBoxItem
+                            {
+                                Content = executable.ProjectName,
+                                Tag = executable.FilePath,
+                            };
+                            window.VisualStudio.Items.Add(comboBoxItem);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+        public static async Task<List<(string FileName, string FilePath)>> GetFiles(string path, string searchPattern)
         {
             List<(string FileName, string FilePath)> files = new List<(string FileName, string FilePath)>();
             try

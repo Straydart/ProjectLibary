@@ -2,16 +2,24 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net8.0-windows7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="FontAwesome.WPF" Version="4.7.0.9" />
-	  <Content Include="AutobuildJsons\**">
+  </ItemGroup>
+
+  <ItemGroup>
+	  <Content Include="plugins\**">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="plugins\" />
   </ItemGroup>
 </Project>

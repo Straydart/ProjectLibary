@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 
-namespace WpfApp1
+namespace ProjectDirectory
 {
     internal interface IFuctionButtons
     {
