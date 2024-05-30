@@ -1,0 +1,63 @@
+﻿<Window x:Class="ProjectDirectory.View.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ProjectDirectory.View"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+        xmlns:localVM="clr-namespace:ProjectDirectory.ViewModel"
+
+        mc:Ignorable="d"
+        Title="MainWindow" Height="500" Width="1000">
+
+    <Window.DataContext>
+        <localVM:ButtonViewModel>
+        </localVM:ButtonViewModel>
+    </Window.DataContext>
+    <ScrollViewer>
+        <Grid x:Name="MainGrid" Grid.IsSharedSizeScope="True">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="30"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <TextBox Grid.Column="0" Grid.ColumnSpan="2" FontSize="20" TextWrapping="Wrap" Text=""  VerticalAlignment="Top" x:Name="Searchbar"/>
+            <Button Grid.Column="1" Grid.Row="0" Click="Search_Click" Width="30" Margin="0,1" HorizontalAlignment="Right" Content="-O"></Button>
+            <ComboBox x:Name="VisualStudio" Grid.Column="5" Grid.ColumnSpan="3" ItemsSource="{Binding ExecutionDatabase}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <ComboBoxItem Tag="{Binding FilePath}" Content="{Binding ProjectName}"></ComboBoxItem>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+            <ItemsControl x:Name="MenuListBox" Grid.Column="6" Grid.ColumnSpan="2" Grid.Row="1" 
+         ItemsSource="{Binding buttonDatas}" >
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Button Content="{Binding ButtonContent}" Tag="{Binding ButtonTag}" Command="{Binding ButtonCommand}" Height="50"/>
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <ItemsControl ItemsSource="{Binding SolutionDatabase}" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="6">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Content="{Binding ProjectName}" Tag="{Binding FilePath}" Click="Open_Sln" Height="50" Grid.ColumnSpan="2"/>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Grid>
+    </ScrollViewer>
+</Window> 
