@@ -1,4 +1,5 @@
-﻿using ProjectDirectory.PluginCore;
+﻿using ProjectDirectory.Models;
+using ProjectDirectory.PluginCore;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -43,9 +44,9 @@ namespace ProjectDirectory.View
 
         public void Open_Sln(object sender, RoutedEventArgs e)
         {
-            if (VisualStudio.SelectedItem is ComboBoxItem selectedItem)
+            if (VisualStudio.SelectedItem is ButtonSafe selectedItem)
             {
-                string filePath = selectedItem.Tag.ToString();
+                string filePath = selectedItem.FilePath;
                 string arguments = ((Button)sender).Tag.ToString();
 
                 var process = new Process

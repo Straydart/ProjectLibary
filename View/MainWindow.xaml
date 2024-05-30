@@ -36,9 +36,7 @@
             <ComboBox x:Name="VisualStudio" Grid.Column="5" Grid.ColumnSpan="3" ItemsSource="{Binding ExecutionDatabase}">
                 <ComboBox.ItemTemplate>
                     <DataTemplate>
-                        <Grid>
-                            <ComboBoxItem Tag="{Binding FilePath}" Content="{Binding ProjectName}"></ComboBoxItem>
-                        </Grid>
+                        <ComboBoxItem Tag="{Binding FilePath}" Content="{Binding ProjectName}"></ComboBoxItem>
                     </DataTemplate>
                 </ComboBox.ItemTemplate>
             </ComboBox>
