@@ -53,7 +53,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <ItemsControl ItemsSource="{Binding SolutionDatabase}" Grid.Column="0" Grid.Row="1" Grid.IsSharedSizeScope="True">
+            <ItemsControl ItemsSource="{Binding SolutionDatabase}" Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="6">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Button Content="{Binding ProjectName}" Tag="{Binding FilePath}" Click="Open_Sln" Height="50" Grid.ColumnSpan="2"/>
